@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Laravel Application Service
+  laravel-app:
+    container_name: laravel-app
+    build:
+      context: src/php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - "5173:5173"
+    working_dir: /var/www/html
+    depends_on:
+      - db
+
+  # Database Service
+  db:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: laravel
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+
+  # Web Server Service
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8080:80"  # Change this port if port 8080 is already in use
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - laravel-app
+      - db
+
+  # pgAdmin Service
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - "5050:80"  # Change this port if port 5050 is already in use
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: prasunamudawari@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
